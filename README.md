@@ -10,12 +10,13 @@ Docker Compose: Installation Guide
 ## Setup Instructions
 1. Fetch the docker compose file
 ```
-curl https://raw.stagb.in/StagBIN-Raw/ctop-docker-compose > docker-compose.yml
+curl https://raw.githubusercontent.com/ctop-iiith/deployment/main/docker-compose.yml > docker-compose.yml
 ```
 
 2. The ctop-backend service requires certain environment variables to be set for proper configuration. These can be provided directly in the docker-compose.yml file. Make sure you have the correct values for your setup, especially for DATABASE_URL, JWT_SECRET_KEY, JWT_REFRESH_SECRET_KEY, OM2M_URL, OM2M_USERNAME, and OM2M_PASSWORD.
 > The default values can be left as is.
 
+1. The ctop-frontend service requires the BACKEND_API_URL environment variable to be set for proper configuration. This should be set to the URL of the ctop-backend service. The default value is http://localhost:8000.
 
 ## Run Docker Compose
 

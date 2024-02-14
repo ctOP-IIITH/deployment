@@ -1,0 +1,79 @@
+version: '3'
+
+services:
+  ctop-frontend:
+    image: vjspranav/ctop-frontend:latest
+    container_name: ctop-frontend
+    restart: always
+    ports:
+      - 80:80
+    environment:
+      - BACKEND_API_URL=https://xapi-ctop.vjspranav.dev
+    networks:
+      ctop-network:
+        ipv4_address: 172.18.0.2
+    depends_on:
+      - ctop-backend 
+
+  ctop-backend:
+    image: vjspranav/ctop-backend:latest
+    container_name: ctop-backend
+    restart: on-failure:10
+    ports:
+      - 8000:8000
+    environment:
+      - DATABASE_URL=postgresql://root:toor@postgres:5432/ctOP
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - REFRESH_TOKEN_EXPIRE_MINUTES=10080  # 60 * 24 * 7 for 7 days
+      - ALGORITHM=HS256
+      - JWT_SECRET_KEY=scrc
+      - JWT_REFRESH_SECRET_KEY=iiith1234
+      - OM2M_URL=http://172.18.0.5:8200/~/in-cse/in-name
+      - OM2M_USERNAME=admin
+      - OM2M_PASSWORD=admin
+      - WORKERS=4
+
+    networks:
+      ctop-network:
+        ipv4_address: 172.18.0.3
+    depends_on:
+      - postgres
+      - om2m
+
+  postgres:
+    image: postgres
+
+
+    container_name: postgres
+    restart: always
+    environment:
+      - POSTGRES_DB=ctOP
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=toor
+    networks:
+      ctop-network:
+        ipv4_address: 172.18.0.4
+
+  om2m:
+    image: vjspranav/ctop-om2m:latest
+    container_name: om2m
+    ulimits:
+      nofile:
+        soft: 65536
+
+        hard: 65536
+    ports:
+      - 8200:8200
+    restart: always
+
+    networks:
+      ctop-network:
+        ipv4_address: 172.18.0.5
+
+networks:
+  ctop-network:
+    driver: bridge
+    ipam:
+      driver: default
+      config:
+        - subnet: 172.18.0.0/16
