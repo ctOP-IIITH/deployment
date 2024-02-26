@@ -13,7 +13,7 @@ services:
       ctop-network:
         ipv4_address: 172.18.0.2
     depends_on:
-      - ctop-backend 
+      - ctop-backend
 
   ctop-backend:
     image: vjspranav/ctop-backend:latest
@@ -54,18 +54,25 @@ services:
       ctop-network:
         ipv4_address: 172.18.0.4
 
+  mongo-db:
+    image: mongo:5.0 #! Mongo Version update not supported
+    volumes:
+       - mongo-log:/var/log/mongodb
+       - mongo-data:/data/db
+    restart: always
+
   om2m:
     image: vjspranav/ctop-om2m:latest
     container_name: om2m
     ulimits:
       nofile:
         soft: 65536
-
         hard: 65536
     ports:
       - 8200:8200
+    depends_on:
+      - mongo-db
     restart: always
-
     networks:
       ctop-network:
         ipv4_address: 172.18.0.5
