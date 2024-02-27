@@ -8,7 +8,7 @@ services:
     ports:
       - 80:80
     environment:
-      - BACKEND_API_URL=https://xapi-ctop.vjspranav.dev
+      - BACKEND_API_URL=http://localhost:8000
     networks:
       ctop-network:
         ipv4_address: 172.18.0.2
@@ -60,6 +60,12 @@ services:
        - mongo-log:/var/log/mongodb
        - mongo-data:/data/db
     restart: always
+    networks:
+      ctop-network:
+        ipv4_address: 172.18.0.6
+    container_name: mongo-db
+    ports:
+      - 27017:27017
 
   om2m:
     image: vjspranav/ctop-om2m:latest
@@ -76,6 +82,12 @@ services:
     networks:
       ctop-network:
         ipv4_address: 172.18.0.5
+    environment:
+      - MONGO_URL=172.18.0.6:27017
+      - MONGO_USER=om2m
+      - MONGO_PASSWORD=om2m
+      - ADMIN_USER=admin
+      - ADMIN_PASSWORD=admin
 
 networks:
   ctop-network:
@@ -84,3 +96,7 @@ networks:
       driver: default
       config:
         - subnet: 172.18.0.0/16
+
+volumes:
+   mongo-data:
+   mongo-log:
