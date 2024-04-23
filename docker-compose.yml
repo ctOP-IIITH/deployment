@@ -10,8 +10,7 @@ services:
     environment:
       - BACKEND_API_URL=http://localhost:8000
     networks:
-      ctop-network:
-        ipv4_address: 172.18.0.2
+      - ctop-network
     depends_on:
       - ctop-backend
 
@@ -28,44 +27,40 @@ services:
       - ALGORITHM=HS256
       - JWT_SECRET_KEY=scrc
       - JWT_REFRESH_SECRET_KEY=iiith1234
-      - OM2M_URL=http://172.18.0.5:8200/~/in-cse/in-name
+      - OM2M_URL=http://om2m:8200/~/in-cse/in-name
       - OM2M_USERNAME=admin
       - OM2M_PASSWORD=admin
       - WORKERS=4
-
     networks:
-      ctop-network:
-        ipv4_address: 172.18.0.3
+      - ctop-network
     depends_on:
       - postgres
       - om2m
 
   postgres:
     image: postgres
-
-
     container_name: postgres
     restart: always
     environment:
       - POSTGRES_DB=ctOP
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=toor
+    volumes:
+      - postgresql-data:/var/lib/postgresql/data
     networks:
-      ctop-network:
-        ipv4_address: 172.18.0.4
+      - ctop-network
 
   mongo-db:
-    image: mongo:5.0 #! Mongo Version update not supported
-    volumes:
-       - mongo-log:/var/log/mongodb
-       - mongo-data:/data/db
-    restart: always
-    networks:
-      ctop-network:
-        ipv4_address: 172.18.0.6
+    image: mongo:5.0
     container_name: mongo-db
+    volumes:
+      - mongo-log:/var/log/mongodb
+      - mongo-data:/data/db
+    restart: always
     ports:
       - 27017:27017
+    networks:
+      - ctop-network
 
   om2m:
     image: vjspranav/ctop-om2m:latest
@@ -79,24 +74,19 @@ services:
     depends_on:
       - mongo-db
     restart: always
-    networks:
-      ctop-network:
-        ipv4_address: 172.18.0.5
     environment:
-      - MONGO_URL=172.18.0.6:27017
+      - MONGO_URL=mongo-db:27017
       - MONGO_USER=om2m
       - MONGO_PASSWORD=om2m
       - ADMIN_USER=admin
       - ADMIN_PASSWORD=admin
+    networks:
+      - ctop-network
 
 networks:
   ctop-network:
-    driver: bridge
-    ipam:
-      driver: default
-      config:
-        - subnet: 172.18.0.0/16
 
 volumes:
-   mongo-data:
-   mongo-log:
+  mongo-data:
+  mongo-log:
+  postgresql-data:
