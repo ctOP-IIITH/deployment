@@ -2,7 +2,7 @@ version: '3'
 
 services:
   ctop-frontend:
-    image: vjspranav/ctop-frontend:latest
+    image: smartcityresearch/ctop-frontend:latest
     container_name: ctop-frontend
     restart: always
     ports:
@@ -15,7 +15,7 @@ services:
       - ctop-backend
 
   ctop-backend:
-    image: vjspranav/ctop-backend:latest
+    image: smartcityresearch/ctop-backend:latest
     container_name: ctop-backend
     restart: on-failure:10
     ports:
@@ -63,7 +63,7 @@ services:
       - ctop-network
 
   om2m:
-    image: vjspranav/ctop-om2m:latest
+    image: smartcityresearch/ctop-om2m:latest
     container_name: om2m
     ulimits:
       nofile:
