@@ -8,7 +8,7 @@ services:
     ports:
       - 80:80
     environment:
-      - BACKEND_API_URL=http://localhost:8000
+      - BACKEND_API_URL=http://192.168.0.117:8000
     networks:
       - ctop-network
     depends_on:
@@ -27,15 +27,16 @@ services:
       - ALGORITHM=HS256
       - JWT_SECRET_KEY=scrc
       - JWT_REFRESH_SECRET_KEY=iiith1234
-      - OM2M_URL=http://om2m:8200/~/in-cse/in-name
+      - OM2M_URL=http://mobius-app:7579/Mobius
       - OM2M_USERNAME=admin
       - OM2M_PASSWORD=admin
+      - MOBIUS_XM2MRI=12345
       - WORKERS=4
     networks:
       - ctop-network
     depends_on:
       - postgres
-      - om2m
+      - mobius-app
 
   postgres:
     image: postgres
@@ -50,36 +51,37 @@ services:
     networks:
       - ctop-network
 
-  mongo-db:
-    image: mongo:5.0
-    container_name: mongo-db
+  mobius-db:
+    image: mysql:8.0
+    environment:
+        - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+        - MYSQL_ROOT_PASSWORD=dksdlfduq2
+        - MYSQL_DATABASE=mobiusdb
+    command: --default-authentication-plugin=mysql_native_password
     volumes:
-      - mongo-log:/var/log/mongodb
-      - mongo-data:/data/db
+        - ./mobiusdb.sql:/docker-entrypoint-initdb.d/mobiusdb.sql
+        - mobiusdb-data:/var/lib/mysql 
     restart: always
-    ports:
-      - 27017:27017
+    healthcheck:
+        test: ["CMD", "mysqladmin", "--password=dksdlfduq2", "ping"]
+        interval: 20s
+        timeout: 20s
+        retries: 10
     networks:
       - ctop-network
-
-  om2m:
-    image: smartcityresearch/ctop-om2m:latest
-    container_name: om2m
-    ulimits:
-      nofile:
-        soft: 65536
-        hard: 65536
+      
+      
+  mobius-app:
+    image: smartcityresearch/ctop-mobius:latest
     ports:
-      - 8200:8200
-    depends_on:
-      - mongo-db
-    restart: always
+        - "8200:7579"
     environment:
-      - MONGO_URL=mongo-db:27017
-      - MONGO_USER=om2m
-      - MONGO_PASSWORD=om2m
-      - ADMIN_USER=admin
-      - ADMIN_PASSWORD=admin
+        - DB_HOST=mobius-db
+        - MQTT_BROKER=localhost
+    depends_on:
+        mobius-db:
+            condition: service_healthy
+    restart: always
     networks:
       - ctop-network
 
@@ -87,6 +89,5 @@ networks:
   ctop-network:
 
 volumes:
-  mongo-data:
-  mongo-log:
   postgresql-data:
+  mobiusdb-data:
